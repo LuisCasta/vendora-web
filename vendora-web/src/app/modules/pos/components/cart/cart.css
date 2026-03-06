@@ -1,0 +1,41 @@
+ul{
+  padding-left:18px;
+
+  margin-top:10px;
+}
+
+li{
+  margin-bottom:8px;
+}
+
+hr{
+  margin:18px 0;
+}
+
+.buttons{
+
+  display:flex;
+
+  gap:10px;
+
+  margin-top:10px;
+}
+
+.buttons button{
+
+  padding:10px 16px;
+
+  border-radius:8px;
+
+  font-weight:600;
+
+  color:white;
+}
+
+.cancel{
+  background:#ff6b6b;
+}
+
+.pay{
+  background:#10b981;
+}

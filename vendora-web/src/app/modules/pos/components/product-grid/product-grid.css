@@ -1,0 +1,31 @@
+.product-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+}
+
+.product-card{
+
+  background:#eef2ff;
+
+  border-radius:12px;
+
+  padding:25px;
+
+  text-align:center;
+
+  font-weight:600;
+
+  border:1px solid #e2e8f0;
+
+  transition:.2s;
+}
+
+.product-card:hover{
+
+  background:#e0e7ff;
+
+  transform:translateY(-2px);
+
+  box-shadow:0 8px 18px rgba(0,0,0,0.08);
+}

@@ -1,0 +1,23 @@
+body{
+
+  margin:0;
+
+  font-family: Inter, system-ui, Arial;
+
+  background:#f4f6fb;
+
+}
+
+button{
+
+  border:none;
+
+  cursor:pointer;
+
+}
+
+h1,h2,h3{
+
+  margin:0;
+
+}
