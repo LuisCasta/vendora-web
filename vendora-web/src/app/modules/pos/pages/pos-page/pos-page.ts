@@ -12,282 +12,419 @@ import { ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/cor
 })
 export class PosPageComponent implements AfterViewInit{
 
-  @ViewChild('searchInput') searchInput!: ElementRef
+@ViewChild('searchInput') searchInput!: ElementRef
 
-  searchTerm=''
+searchTerm=''
 
-  isMobile=false
+isMobile=false
 
-  weightModal=false
+ticket:any[]=[]
 
-  weightValue=0
+selectedTicketIndex:number | null = null
 
-  selectedProduct:any=null
 
-  kilos:number | null = null
+/* ======================
+PRODUCTOS
+====================== */
 
-  amount:number | null = null
+products=[
 
-  selectedTicketIndex:number | null = null
+{ code:'1001', name:'Chocolate Hershey', price:18, type:'unit', stock:25 },
+{ code:'1002', name:'Chocolate Kinder', price:22, type:'unit', stock:15 },
+{ code:'1003', name:'Gomitas Ácidas', price:15, type:'unit', stock:40 },
+{ code:'1004', name:'Gomitas Panditas', price:14, type:'unit', stock:50 },
 
-  ticket:any[]=[]
+{ code:'1005', name:'Mazapán', price:10, type:'unit', stock:60 },
+{ code:'1006', name:'Chicles Trident', price:9, type:'unit', stock:80 },
+{ code:'1007', name:'Coca Cola', price:20, type:'unit', stock:45 },
 
+{ code:'1008', name:'Pepsi', price:19, type:'unit', stock:40 },
+{ code:'1009', name:'Fanta Naranja', price:19, type:'unit', stock:35 },
+{ code:'1010', name:'Sprite', price:19, type:'unit', stock:30 },
 
-  products=[
+{ code:'1011', name:'Agua Ciel', price:13, type:'unit', stock:60 },
+{ code:'1012', name:'Agua Bonafont', price:13, type:'unit', stock:55 },
 
-  { code:'1001', name:'Chocolate Hershey', price:18, type:'unit', stock:25 },
-  { code:'1002', name:'Chocolate Kinder', price:22, type:'unit', stock:15 },
-  { code:'1003', name:'Gomitas Ácidas', price:15, type:'unit', stock:40 },
-  { code:'1004', name:'Gomitas Panditas', price:14, type:'unit', stock:50 },
+{ code:'1013', name:'Snickers', price:20, type:'unit', stock:25 },
+{ code:'1014', name:'Milky Way', price:19, type:'unit', stock:30 },
+{ code:'1015', name:'M&M Chocolate', price:21, type:'unit', stock:35 },
 
-  { code:'2001', name:'Gomitas a Granel', price:120, type:'weight', stock:5000 },
-  { code:'2002', name:'Chilito en Polvo', price:150, type:'weight', stock:3000 },
+{ code:'1016', name:'Skittles', price:20, type:'unit', stock:40 },
+{ code:'1017', name:'Lucas Muecas', price:17, type:'unit', stock:50 },
+{ code:'1018', name:'Pelón Pelo Rico', price:18, type:'unit', stock:45 },
 
-  { code:'1005', name:'Mazapán', price:10, type:'unit', stock:60 },
-  { code:'1006', name:'Chicles Trident', price:9, type:'unit', stock:80 },
+{ code:'1019', name:'Pulparindo', price:16, type:'unit', stock:60 },
+{ code:'1020', name:'Tamaroca', price:15, type:'unit', stock:55 },
 
-  { code:'1007', name:'Coca Cola', price:20, type:'unit', stock:45 }
+{ code:'1021', name:'Paleta Payaso', price:24, type:'unit', stock:20 },
+{ code:'1022', name:'Paleta de Fresa', price:12, type:'unit', stock:35 },
+{ code:'1023', name:'Paleta Mango', price:12, type:'unit', stock:35 },
 
-  ]
+{ code:'1024', name:'Churrumais', price:14, type:'unit', stock:40 },
+{ code:'1025', name:'Doritos', price:18, type:'unit', stock:30 },
+{ code:'1026', name:'Sabritas', price:18, type:'unit', stock:28 },
 
+{ code:'1027', name:'Cacahuates Japoneses', price:16, type:'unit', stock:35 },
+{ code:'1028', name:'Cacahuates Enchilados', price:17, type:'unit', stock:30 },
 
-  filteredProducts:any[]=[]
+{ code:'1029', name:'Galletas Oreo', price:19, type:'unit', stock:22 },
+{ code:'1030', name:'Galletas Emperador', price:18, type:'unit', stock:25 },
 
 
-  ngOnInit(){
+/* PRODUCTOS A GRANEL */
 
-    this.isMobile = window.innerWidth < 768
+{ code:'2001', name:'Gomitas a Granel', price:120, type:'weight', stock:5000 },
+{ code:'2002', name:'Chilito en Polvo', price:150, type:'weight', stock:3000 },
+{ code:'2003', name:'Miguelito en Polvo', price:140, type:'weight', stock:2800 },
+{ code:'2004', name:'Tamarindo Enchilado', price:130, type:'weight', stock:3500 },
+{ code:'2005', name:'Cacahuate Garapiñado', price:160, type:'weight', stock:4000 },
+{ code:'2006', name:'Chocolate a Granel', price:180, type:'weight', stock:3200 }
 
-    if(!this.isMobile){
-      this.filteredProducts=[...this.products]
-    }
+]
 
-  }
+filteredProducts:any[]=[]
 
 
-  ngAfterViewInit(){
-    this.searchInput.nativeElement.focus()
-  }
+/* ======================
+DESCUENTO
+====================== */
 
+discountPercent:number | null=null
+discountAmount:number | null=null
+discountApplied=0
 
-  /* =========================
-     TECLAS
-  ========================= */
+discountModal=false
 
-  @HostListener('document:keydown.escape')
-  handleEsc(){
 
-    if(this.weightModal){
-      this.closeWeightModal()
-    }
+/* ======================
+COBRO
+====================== */
 
-  }
+paymentModal=false
+paymentMethod='efectivo'
 
+splitPayment=false
 
-  @HostListener('document:keydown.+')
-  increaseQty(){
+splitAmount1:number | null=null
+splitAmount2:number | null=null
 
-    if(this.selectedTicketIndex===null) return
+splitMethod1='efectivo'
+splitMethod2='tarjeta'
 
-    this.ticket[this.selectedTicketIndex].qty++
+ticketModal=false
 
-  }
 
+/* ======================
+GRANEL
+====================== */
 
-  @HostListener('document:keydown.-')
-  decreaseQty(){
+weightModal=false
+selectedProduct:any=null
+kilos:number | null=null
+amount:number | null=null
 
-    if(this.selectedTicketIndex===null) return
 
-    const item=this.ticket[this.selectedTicketIndex]
+/* ======================
+INIT
+====================== */
 
-    if(item.qty>1){
-      item.qty--
-    }
+ngOnInit(){
 
-  }
+this.isMobile = window.innerWidth < 768
 
+if(!this.isMobile){
+this.filteredProducts=[...this.products]
+}
 
-  @HostListener('document:keydown.delete')
-  deleteItem(){
+}
 
-    this.removeSelectedItem()
+ngAfterViewInit(){
+this.searchInput.nativeElement.focus()
+}
 
-  }
 
+/* ======================
+BUSCAR PRODUCTOS
+====================== */
 
-  /* =========================
-     MODAL GRANEL
-  ========================= */
+filterProducts(){
 
-  closeWeightModal(){
+const term=this.searchTerm.toLowerCase()
 
-    this.weightModal=false
-    this.selectedProduct=null
-    this.kilos=null
-    this.amount=null
+if(!term && this.isMobile){
+this.filteredProducts=[]
+return
+}
 
-  }
+this.filteredProducts=this.products.filter(p=>
 
+p.name.toLowerCase().includes(term) ||
+p.code.toLowerCase().includes(term)
 
-  openWeightModal(product:any){
+)
 
-    this.selectedProduct=product
-    this.kilos=null
-    this.amount=null
-    this.weightModal=true
+}
 
-  }
 
+/* ======================
+AGREGAR PRODUCTO
+====================== */
 
-  updateFromKilos(){
+addProduct(product:any){
 
-    if(!this.kilos) return
+if(product.type==='weight'){
+this.openWeightModal(product)
+return
+}
 
-    this.amount = Number((this.kilos * this.selectedProduct.price).toFixed(2))
+const existing=this.ticket.find(t=>t.name===product.name)
 
-  }
+if(existing){
+existing.qty++
+}else{
+this.ticket.push({...product,qty:1})
+}
 
+}
 
-  updateFromAmount(){
 
-    if(!this.amount) return
+/* ======================
+ENTER PRODUCTO
+====================== */
 
-    this.kilos = Number((this.amount / this.selectedProduct.price).toFixed(3))
+addFirstProduct(){
 
-  }
+const codeProduct=this.products.find(p=>p.code===this.searchTerm)
 
+if(codeProduct){
 
-  confirmWeight(){
+this.addProduct(codeProduct)
 
-    if(!this.kilos || !this.amount) return
+this.searchTerm=''
+this.filterProducts()
 
-    this.ticket.push({
+return
+}
 
-      name:this.selectedProduct.name,
-      price:this.selectedProduct.price,
-      qty:this.kilos,
-      total:this.amount,
-      type:'weight'
+if(this.filteredProducts.length>0){
 
-    })
+this.addProduct(this.filteredProducts[0])
 
-    this.weightModal=false
+this.searchTerm=''
+this.filterProducts()
 
-  }
+}
 
+}
 
-  /* =========================
-     BUSCADOR
-  ========================= */
 
-  filterProducts(){
+/* ======================
+TICKET
+====================== */
 
-    const term=this.searchTerm.toLowerCase()
+selectTicketItem(index:number){
+this.selectedTicketIndex=index
+}
 
-    if(!term && this.isMobile){
-      this.filteredProducts=[]
-      return
-    }
+removeSelectedItem(){
 
-    this.filteredProducts=this.products.filter(p=>
+if(this.selectedTicketIndex===null) return
 
-      p.name.toLowerCase().includes(term) ||
-      p.code.toLowerCase().includes(term)
+this.ticket.splice(this.selectedTicketIndex,1)
+this.selectedTicketIndex=null
 
-    )
+}
 
-  }
+removeItem(index:number){
 
+this.ticket.splice(index,1)
+this.selectedTicketIndex=null
 
-  /* =========================
-     TICKET
-  ========================= */
+}
 
-  selectTicketItem(index:number){
 
-    this.selectedTicketIndex=index
+/* ======================
+TOTAL
+====================== */
 
-  }
+getTotal(){
 
+return this.getSubtotal() - this.discountApplied
 
-  addProduct(product:any){
+}
 
-    if(product.type==='weight'){
 
-      this.openWeightModal(product)
-      return
+/* ======================
+LIMPIAR
+====================== */
 
-    }
+clearTicket(){
 
-    const existing=this.ticket.find(t=>t.name===product.name)
+this.ticket=[]
+this.discountApplied=0
+this.discountPercent=null
+this.discountAmount=null
 
-    if(existing){
+}
 
-      existing.qty++
 
-    }else{
+/* ======================
+DESCUENTO
+====================== */
 
-      this.ticket.push({...product,qty:1})
+openDiscountModal(){
 
-    }
+this.discountModal=true
 
-  }
+}
 
+applyDiscount(){
 
-  addFirstProduct(){
+const subtotal=this.ticket.reduce((sum,item)=>sum+(item.price*item.qty),0)
 
-    const codeProduct=this.products.find(p=>p.code===this.searchTerm)
+if(this.discountPercent){
 
-    if(codeProduct){
+this.discountApplied=(subtotal*this.discountPercent)/100
 
-      this.addProduct(codeProduct)
+}
 
-      this.searchTerm=''
+if(this.discountAmount){
 
-      this.filterProducts()
+this.discountApplied=this.discountAmount
 
-      return
+}
 
-    }
+this.discountModal=false
 
-    if(this.filteredProducts.length>0){
+}
 
-      this.addProduct(this.filteredProducts[0])
+getSubtotal(){
 
-      this.searchTerm=''
+return this.ticket.reduce((sum,item)=>sum+(item.price*item.qty),0)
 
-      this.filterProducts()
+}
 
-    }
 
-  }
+/* ======================
+COBRAR
+====================== */
 
+openPaymentModal(){
 
-  removeSelectedItem(){
+this.paymentModal=true
 
-    if(this.selectedTicketIndex===null) return
+}
 
-    this.ticket.splice(this.selectedTicketIndex,1)
+confirmPayment(){
 
-    this.selectedTicketIndex=null
+this.paymentModal=false
+this.clearTicket()
 
-  }
+}
 
 
-  removeItem(index:number){
+/* ======================
+GRANEL
+====================== */
 
-    this.ticket.splice(index,1)
+openWeightModal(product:any){
 
-    this.selectedTicketIndex=null
+this.selectedProduct=product
+this.kilos=null
+this.amount=null
+this.weightModal=true
 
-  }
+}
 
+closeWeightModal(){
 
-  getTotal(){
+this.weightModal=false
 
-    return this.ticket.reduce((sum,item)=>sum+(item.price*item.qty),0)
+this.selectedProduct=null
 
-  }
+this.kilos=null
+
+this.amount=null
+
+}
+
+updateFromKilos(){
+
+if(!this.kilos) return
+
+this.amount=Number((this.kilos*this.selectedProduct.price).toFixed(2))
+
+}
+
+updateFromAmount(){
+
+if(!this.amount) return
+
+this.kilos=Number((this.amount/this.selectedProduct.price).toFixed(3))
+
+}
+
+confirmWeight(){
+
+if(!this.kilos || !this.amount) return
+
+this.ticket.push({
+
+name:this.selectedProduct.name,
+price:this.selectedProduct.price,
+qty:this.kilos,
+total:this.amount,
+type:'weight'
+
+})
+
+this.weightModal=false
+
+}
+
+openTicketModal(){
+
+this.ticketModal=true
+
+}
+
+/* ======================
+TECLAS
+====================== */
+
+@HostListener('document:keydown.escape')
+handleEsc(){
+
+if(this.weightModal) this.weightModal=false
+if(this.discountModal) this.discountModal=false
+if(this.paymentModal) this.paymentModal=false
+
+}
+
+@HostListener('document:keydown.+')
+increaseQty(){
+
+if(this.selectedTicketIndex===null) return
+this.ticket[this.selectedTicketIndex].qty++
+
+}
+
+@HostListener('document:keydown.-')
+decreaseQty(){
+
+if(this.selectedTicketIndex===null) return
+
+const item=this.ticket[this.selectedTicketIndex]
+
+if(item.qty>1) item.qty--
+
+}
+
+@HostListener('document:keydown.delete')
+deleteItem(){
+
+this.removeSelectedItem()
+
+}
 
 }

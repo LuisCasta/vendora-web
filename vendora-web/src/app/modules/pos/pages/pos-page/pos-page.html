@@ -58,7 +58,14 @@
   <!-- TICKET -->
   <div class="ticket-panel">
 
+    <div class="ticket-header">
+
     <h3>Ticket</h3>
+
+    <button class="expand" (click)="openTicketModal()">⛶
+    </button>
+
+    </div>
 
     <div class="ticket-items">
 
@@ -91,22 +98,32 @@
 
     <div class="total-section">
 
-      <div class="total-title">Total</div>
+      <div class="total-title">Subtotal</div>
+        <div>${{getSubtotal()}}</div>
 
-      <div class="total">
-        ${{getTotal()}}
-      </div>
+        <div *ngIf="discountApplied > 0" class="discount-line">
+        Descuento -${{discountApplied}}
+        </div>
+
+        <div class="total-title">Total</div>
+      <div class="total">${{getTotal()}}</div>
 
     </div>
 
 
     <div class="payments">
 
-      <button class="pay green">Efectivo</button>
+      <button class="pay green" (click)="openPaymentModal()">
+      Cobrar
+      </button>
 
-      <button class="pay blue">Tarjeta</button>
+      <button class="pay purple" (click)="openDiscountModal()">
+      Descuento
+      </button>
 
-      <button class="pay purple">Descuento</button>
+      <button class="pay blue" (click)="clearTicket()">
+      Limpiar
+      </button>
 
     </div>
 
@@ -154,4 +171,136 @@ Agregar al Ticket
 <button class="cancel" (click)="closeWeightModal()">
 Cancelar
 </button>
+</div>
+
+<!-- MODAL COBRAR -->
+
+<div class="modal-backdrop" *ngIf="paymentModal">
+
+<div class="modal">
+
+<h3>Cobrar</h3>
+
+<p>Total a cobrar</p>
+
+<h2>${{getTotal()}}</h2>
+
+
+<label>Método de pago</label>
+
+<select [(ngModel)]="paymentMethod">
+
+<option value="efectivo">Efectivo</option>
+<option value="tarjeta">Tarjeta</option>
+<option value="transferencia">Transferencia</option>
+<option value="dividido">Pago dividido</option>
+
+</select>
+
+
+<!-- PAGO DIVIDIDO -->
+
+<div *ngIf="paymentMethod==='dividido'">
+
+<label>Monto 1</label>
+
+<input type="number" [(ngModel)]="splitAmount1">
+
+<select [(ngModel)]="splitMethod1">
+<option value="efectivo">Efectivo</option>
+<option value="tarjeta">Tarjeta</option>
+<option value="transferencia">Transferencia</option>
+</select>
+
+
+<label>Monto 2</label>
+
+<input type="number" [(ngModel)]="splitAmount2">
+
+<select [(ngModel)]="splitMethod2">
+<option value="efectivo">Efectivo</option>
+<option value="tarjeta">Tarjeta</option>
+<option value="transferencia">Transferencia</option>
+</select>
+
+</div>
+
+
+<button (click)="confirmPayment()">Confirmar pago</button>
+
+<button class="cancel" (click)="paymentModal=false">
+
+Cancelar
+
+</button>
+
+</div>
+
+</div>
+
+<!-- MODAL DESCUENTO -->
+
+<div class="modal-backdrop" *ngIf="discountModal">
+
+<div class="modal">
+
+<h3>Aplicar descuento</h3>
+
+<label>% Descuento</label>
+
+<input type="number" [(ngModel)]="discountPercent">
+
+<label>Monto descuento</label>
+
+<input type="number" [(ngModel)]="discountAmount">
+
+<button (click)="applyDiscount()">
+Aplicar
+</button>
+
+<button class="cancel" (click)="discountModal=false">
+Cancelar
+</button>
+
+</div>
+
+</div>
+
+<!-- MODAL TICKET -->
+
+<div class="modal-backdrop" *ngIf="ticketModal">
+
+<div class="modal ticket-modal">
+
+<h2>Ticket completo</h2>
+
+  <div class="ticket-full-list">
+
+    <div 
+    *ngFor="let item of ticket"
+    class="ticket-full-row"
+    >
+
+    <span>{{item.name}} x{{item.qty}}</span>
+
+    <span>${{item.price * item.qty}}</span>
+
+    </div>
+
+  </div>
+
+<div class="ticket-total-modal">
+
+Total ${{getTotal()}}
+
+</div>
+
+<button (click)="ticketModal=false">
+
+Cerrar
+
+</button>
+
+</div>
+
 </div>
