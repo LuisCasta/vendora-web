@@ -157,6 +157,7 @@ border-bottom:1px solid #eee;
 
 }
 
+
 /* CARD POS */
 
 .card-pos{
@@ -200,6 +201,7 @@ border-left:5px solid #f4a261;
 
 }
 
+
 .logo{
 
 display:flex;
@@ -209,5 +211,86 @@ align-items:center;
 gap:10px;
 
 cursor:pointer;
+
+}
+
+
+
+/* ========================= */
+/* RESPONSIVE */
+/* ========================= */
+
+/* TABLET */
+
+@media (max-width: 1024px){
+
+.dashboard{
+
+padding:20px;
+
+}
+
+.cards{
+
+grid-template-columns:repeat(2,1fr);
+
+}
+
+.grid{
+
+grid-template-columns:1fr;
+
+}
+
+}
+
+
+/* CELULAR */
+
+@media (max-width: 600px){
+
+.dashboard{
+
+padding:15px;
+
+}
+
+.welcome{
+
+font-size:20px;
+
+}
+
+.cards{
+
+grid-template-columns:1fr;
+
+gap:15px;
+
+}
+
+.card{
+
+padding:16px;
+
+}
+
+.metric{
+
+font-size:24px;
+
+}
+
+.chart-placeholder{
+
+height:180px;
+
+}
+
+.activity-item{
+
+font-size:14px;
+
+}
 
 }

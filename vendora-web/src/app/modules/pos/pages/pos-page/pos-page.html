@@ -13,6 +13,9 @@
         (keydown.enter)="addFirstProduct()"
       />
     </div>
+    <div *ngIf="isMobile && !searchTerm" class="search-hint">
+      Busca un producto o escanea un código
+    </div>
 
     <div class="product-list">
 

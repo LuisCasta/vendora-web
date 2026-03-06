@@ -1,9 +1,7 @@
 import { Component } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { CommonModule } from '@angular/common'
-import { ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
-
-
+import { ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core'
 
 @Component({
   selector:'app-pos-page',
@@ -12,64 +10,28 @@ import { ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/cor
   templateUrl:'./pos-page.html',
   styleUrls:['./pos-page.css']
 })
-export class PosPageComponent{
+export class PosPageComponent implements AfterViewInit{
 
-  @ViewChild('searchInput') searchInput!: ElementRef;
+  @ViewChild('searchInput') searchInput!: ElementRef
+
   searchTerm=''
 
-  closeWeightModal(){
+  isMobile=false
 
-  this.weightModal=false
+  weightModal=false
 
-  this.selectedProduct=null
+  weightValue=0
 
-  this.kilos=null
+  selectedProduct:any=null
 
-  this.amount=null
+  kilos:number | null = null
 
-  }
+  amount:number | null = null
 
-  @HostListener('document:keydown.escape', [])
-  handleEsc(){
+  selectedTicketIndex:number | null = null
 
-    if(this.weightModal){
+  ticket:any[]=[]
 
-    this.closeWeightModal()
-
-    }
-
-  }
-
-  @HostListener('document:keydown.+')
-  increaseQty(){
-
-    if(this.selectedTicketIndex===null) return
-
-    this.ticket[this.selectedTicketIndex].qty++
-
-  }
-
-  @HostListener('document:keydown.-')
-  decreaseQty(){
-
-    if(this.selectedTicketIndex===null) return
-
-    const item=this.ticket[this.selectedTicketIndex]
-
-    if(item.qty>1){
-
-    item.qty--
-
-    }
-
-  }
-
-  @HostListener('document:keydown.delete')
-  deleteItem(){
-
-    this.removeSelectedItem()
-
-  }
 
   products=[
 
@@ -88,38 +50,95 @@ export class PosPageComponent{
 
   ]
 
-  filteredProducts=[...this.products]
 
-  selectedTicketIndex:number | null = null
+  filteredProducts:any[]=[]
 
-  ticket:any[]=[]
 
-  weightModal=false
+  ngOnInit(){
 
-  weightValue=0
+    this.isMobile = window.innerWidth < 768
 
-  selectedProduct:any=null
+    if(!this.isMobile){
+      this.filteredProducts=[...this.products]
+    }
 
-  kilos:number | null = null
+  }
 
-  amount:number | null = null
 
   ngAfterViewInit(){
     this.searchInput.nativeElement.focus()
   }
 
-  
+
+  /* =========================
+     TECLAS
+  ========================= */
+
+  @HostListener('document:keydown.escape')
+  handleEsc(){
+
+    if(this.weightModal){
+      this.closeWeightModal()
+    }
+
+  }
+
+
+  @HostListener('document:keydown.+')
+  increaseQty(){
+
+    if(this.selectedTicketIndex===null) return
+
+    this.ticket[this.selectedTicketIndex].qty++
+
+  }
+
+
+  @HostListener('document:keydown.-')
+  decreaseQty(){
+
+    if(this.selectedTicketIndex===null) return
+
+    const item=this.ticket[this.selectedTicketIndex]
+
+    if(item.qty>1){
+      item.qty--
+    }
+
+  }
+
+
+  @HostListener('document:keydown.delete')
+  deleteItem(){
+
+    this.removeSelectedItem()
+
+  }
+
+
+  /* =========================
+     MODAL GRANEL
+  ========================= */
+
+  closeWeightModal(){
+
+    this.weightModal=false
+    this.selectedProduct=null
+    this.kilos=null
+    this.amount=null
+
+  }
+
+
   openWeightModal(product:any){
 
     this.selectedProduct=product
-
     this.kilos=null
-
     this.amount=null
-
     this.weightModal=true
 
   }
+
 
   updateFromKilos(){
 
@@ -129,6 +148,7 @@ export class PosPageComponent{
 
   }
 
+
   updateFromAmount(){
 
     if(!this.amount) return
@@ -136,7 +156,8 @@ export class PosPageComponent{
     this.kilos = Number((this.amount / this.selectedProduct.price).toFixed(3))
 
   }
-  
+
+
   confirmWeight(){
 
     if(!this.kilos || !this.amount) return
@@ -144,13 +165,9 @@ export class PosPageComponent{
     this.ticket.push({
 
       name:this.selectedProduct.name,
-
       price:this.selectedProduct.price,
-
       qty:this.kilos,
-
       total:this.amount,
-
       type:'weight'
 
     })
@@ -159,19 +176,33 @@ export class PosPageComponent{
 
   }
 
+
+  /* =========================
+     BUSCADOR
+  ========================= */
+
   filterProducts(){
 
     const term=this.searchTerm.toLowerCase()
 
+    if(!term && this.isMobile){
+      this.filteredProducts=[]
+      return
+    }
+
     this.filteredProducts=this.products.filter(p=>
 
-    p.name.toLowerCase().includes(term) ||
-
-    p.code.toLowerCase().includes(term)
+      p.name.toLowerCase().includes(term) ||
+      p.code.toLowerCase().includes(term)
 
     )
 
   }
+
+
+  /* =========================
+     TICKET
+  ========================= */
 
   selectTicketItem(index:number){
 
@@ -179,13 +210,13 @@ export class PosPageComponent{
 
   }
 
+
   addProduct(product:any){
 
     if(product.type==='weight'){
 
-    this.openWeightModal(product)
-
-    return
+      this.openWeightModal(product)
+      return
 
     }
 
@@ -193,15 +224,15 @@ export class PosPageComponent{
 
     if(existing){
 
-    existing.qty++
+      existing.qty++
 
     }else{
 
-    this.ticket.push({...product,qty:1})
+      this.ticket.push({...product,qty:1})
 
     }
 
-    }
+  }
 
 
   addFirstProduct(){
@@ -210,27 +241,28 @@ export class PosPageComponent{
 
     if(codeProduct){
 
-    this.addProduct(codeProduct)
+      this.addProduct(codeProduct)
 
-    this.searchTerm=''
+      this.searchTerm=''
 
-    this.filterProducts()
+      this.filterProducts()
 
-    return
+      return
 
     }
 
     if(this.filteredProducts.length>0){
 
-    this.addProduct(this.filteredProducts[0])
+      this.addProduct(this.filteredProducts[0])
 
-    this.searchTerm=''
+      this.searchTerm=''
 
-    this.filterProducts()
+      this.filterProducts()
 
     }
 
   }
+
 
   removeSelectedItem(){
 
@@ -241,6 +273,7 @@ export class PosPageComponent{
     this.selectedTicketIndex=null
 
   }
+
 
   removeItem(index:number){
 
