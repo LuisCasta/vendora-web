@@ -1,0 +1,253 @@
+<!-- HEADER -->
+<div class="corte-header">
+
+  <div class="corte-header-left">
+    <a routerLink="/dashboard" class="btn-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Dashboard
+    </a>
+    <div>
+      <h1 class="corte-title">Corte del día</h1>
+      <p class="corte-meta">{{fecha | date:'EEEE d \'de\' MMMM yyyy':'':'es'}} &nbsp;·&nbsp; {{nombreCajero}} &nbsp;·&nbsp; {{nombreTienda}}</p>
+    </div>
+  </div>
+
+  <div class="corte-header-actions">
+    <button class="btn-imprimir" (click)="imprimir()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+      </svg>
+      Imprimir
+    </button>
+    <button
+      class="btn-cerrar-corte"
+      [class.done]="corteCerrado"
+      (click)="cerrarCorte()"
+      [disabled]="corteCerrado"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline *ngIf="!corteCerrado" points="20 6 9 17 4 12"/>
+        <circle *ngIf="corteCerrado" cx="12" cy="12" r="10"/><polyline *ngIf="corteCerrado" points="12 8 12 12 14 14"/>
+      </svg>
+      {{corteCerrado ? 'Corte cerrado' : 'Cerrar corte'}}
+    </button>
+  </div>
+
+</div>
+
+<!-- ALERTA CORTE CERRADO -->
+<div class="corte-closed-banner" *ngIf="corteCerrado">
+  Corte cerrado correctamente. Ya no se pueden registrar ventas para este día.
+</div>
+
+
+<!-- CUERPO -->
+<div class="corte-body">
+
+
+  <!-- ============================================
+    COLUMNA IZQUIERDA
+  ============================================ -->
+  <div class="corte-col-main">
+
+
+    <!-- RESUMEN TOTAL -->
+    <div class="corte-section">
+      <div class="section-header">Resumen del día</div>
+      <div class="resumen-grid">
+
+        <div class="resumen-card big">
+          <div class="rc-label">Total vendido</div>
+          <div class="rc-value green">${{totalVentas | number:'1.2-2'}}</div>
+        </div>
+
+        <div class="resumen-card">
+          <div class="rc-label">Transacciones</div>
+          <div class="rc-value">{{numTransacciones}}</div>
+        </div>
+
+        <div class="resumen-card">
+          <div class="rc-label">Ticket promedio</div>
+          <div class="rc-value">${{(totalVentas / numTransacciones) | number:'1.2-2'}}</div>
+        </div>
+
+        <div class="resumen-card warn">
+          <div class="rc-label">Total gastos / salidas</div>
+          <div class="rc-value">${{totalGastos | number:'1.2-2'}}</div>
+        </div>
+
+        <div class="resumen-card">
+          <div class="rc-label">Descuentos aplicados</div>
+          <div class="rc-value red">-${{totalDescuentos | number:'1.2-2'}}</div>
+        </div>
+
+        <div class="resumen-card highlight">
+          <div class="rc-label">Neto en caja (efectivo - gastos)</div>
+          <div class="rc-value">${{netoCaja | number:'1.2-2'}}</div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- MÉTODOS DE PAGO -->
+    <div class="corte-section">
+      <div class="section-header">Cobrado por método de pago</div>
+      <div class="metodos-list">
+
+        <div class="metodo-row">
+          <div class="metodo-info">
+            <span class="metodo-icon efectivo">$</span>
+            <div>
+              <div class="metodo-name">Efectivo</div>
+              <div class="metodo-pct">{{pctEfectivo}}% del total</div>
+            </div>
+          </div>
+          <div class="metodo-bar-wrap">
+            <div class="metodo-bar" [style.width.%]="pctEfectivo" style="background:#23b26d"></div>
+          </div>
+          <div class="metodo-monto">${{totalEfectivo | number:'1.2-2'}}</div>
+        </div>
+
+        <div class="metodo-row">
+          <div class="metodo-info">
+            <span class="metodo-icon tarjeta">▣</span>
+            <div>
+              <div class="metodo-name">Tarjeta</div>
+              <div class="metodo-pct">{{pctTarjeta}}% del total</div>
+            </div>
+          </div>
+          <div class="metodo-bar-wrap">
+            <div class="metodo-bar" [style.width.%]="pctTarjeta" style="background:#4f8ef7"></div>
+          </div>
+          <div class="metodo-monto">${{totalTarjeta | number:'1.2-2'}}</div>
+        </div>
+
+        <div class="metodo-row">
+          <div class="metodo-info">
+            <span class="metodo-icon transfer">⇄</span>
+            <div>
+              <div class="metodo-name">Transferencia</div>
+              <div class="metodo-pct">{{pctTransferencia}}% del total</div>
+            </div>
+          </div>
+          <div class="metodo-bar-wrap">
+            <div class="metodo-bar" [style.width.%]="pctTransferencia" style="background:#7c5cff"></div>
+          </div>
+          <div class="metodo-monto">${{totalTransferencia | number:'1.2-2'}}</div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- DETALLE VENTAS -->
+    <div class="corte-section">
+      <div class="section-header">Detalle de ventas ({{numTransacciones}})</div>
+      <div class="tabla-wrap">
+        <table class="corte-tabla">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Hora</th>
+              <th>Productos</th>
+              <th>Método</th>
+              <th>Descuento</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of ventas" [class.row-descuento]="v.descuento > 0">
+              <td class="muted">{{v.id}}</td>
+              <td class="muted">{{v.hora}}</td>
+              <td class="productos-cell">{{v.productos}}</td>
+              <td>
+                <span class="metodo-badge" [class]="'badge-' + v.metodo">{{v.metodo}}</span>
+              </td>
+              <td class="red">{{v.descuento > 0 ? '-$' + v.descuento : '—'}}</td>
+              <td class="bold">${{v.total}}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4"></td>
+              <td class="red bold">-${{totalDescuentos}}</td>
+              <td class="bold green">${{totalVentas}}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+
+  </div><!-- /col-main -->
+
+
+  <!-- ============================================
+    COLUMNA DERECHA
+  ============================================ -->
+  <div class="corte-col-side">
+
+
+    <!-- MÁS VENDIDOS -->
+    <div class="corte-section">
+      <div class="section-header">Lo más vendido</div>
+      <div class="top-list">
+        <div class="top-row" *ngFor="let p of topProductos; let i = index">
+          <span class="top-rank" [class.gold]="i===0" [class.silver]="i===1" [class.bronze]="i===2">
+            {{i + 1}}
+          </span>
+          <span class="top-name">{{p.name}}</span>
+          <span class="top-qty">×{{p.qty}}</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- DESCUENTOS -->
+    <div class="corte-section">
+      <div class="section-header">Descuentos aplicados</div>
+      <div *ngIf="ventasConDescuento.length === 0" class="empty-state">
+        Sin descuentos hoy
+      </div>
+      <div class="desc-list" *ngIf="ventasConDescuento.length > 0">
+        <div class="desc-row" *ngFor="let v of ventasConDescuento">
+          <div>
+            <div class="desc-id">Venta #{{v.id}}</div>
+            <div class="desc-prod">{{v.productos}}</div>
+          </div>
+          <div class="desc-monto red">-${{v.descuento}}</div>
+        </div>
+        <div class="desc-total">
+          <span>Total descuentos</span>
+          <span class="red bold">-${{totalDescuentos}}</span>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- GASTOS / SALIDAS -->
+    <div class="corte-section">
+      <div class="section-header">Gastos y salidas</div>
+      <div *ngIf="gastos.length === 0" class="empty-state">Sin gastos registrados</div>
+      <div class="gasto-list" *ngIf="gastos.length > 0">
+        <div class="gasto-row" *ngFor="let g of gastos">
+          <div>
+            <div class="gasto-desc">{{g.descripcion}}</div>
+            <div class="gasto-hora muted">{{g.hora}}</div>
+          </div>
+          <div class="gasto-monto warn-text">-${{g.monto}}</div>
+        </div>
+        <div class="gasto-total">
+          <span>Total salidas</span>
+          <span class="warn-text bold">-${{totalGastos}}</span>
+        </div>
+      </div>
+    </div>
+
+
+  </div><!-- /col-side -->
+
+</div><!-- /body -->

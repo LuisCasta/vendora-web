@@ -1,9 +1,72 @@
+<!-- BARRA DE TICKETS PENDIENTES -->
+<div class="ticket-tabs-bar">
+
+  <div class="ticket-tabs-list">
+
+    <div
+      *ngFor="let t of tickets; let i = index"
+      class="ticket-tab"
+      [class.active]="i === activeTicketIndex"
+      (click)="switchTicket(i)"
+    >
+
+      <!-- Nombre normal o input editable -->
+      <span
+        *ngIf="editingTabIndex !== i"
+        class="tab-name"
+        (dblclick)="startEditTab(i, $event)"
+        title="Doble click para renombrar"
+      >
+        {{t.name}}
+      </span>
+
+      <input
+        *ngIf="editingTabIndex === i"
+        id="tab-name-input"
+        class="tab-name-input"
+        [(ngModel)]="editingTabName"
+        (blur)="confirmEditTab()"
+        (keydown.enter)="confirmEditTab()"
+        (keydown.escape)="editingTabIndex=null"
+        (click)="$event.stopPropagation()"
+      />
+
+      <!-- Badge con número de items -->
+      <span
+        *ngIf="ticketItemCount(i) > 0"
+        class="tab-badge"
+      >
+        {{ticketItemCount(i)}}
+      </span>
+
+      <!-- Cerrar tab -->
+      <button
+        class="tab-close"
+        (click)="closeTicketTab(i, $event)"
+        title="Cerrar ticket"
+      >
+        ✕
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- Nuevo ticket -->
+  <button class="btn-new-ticket" (click)="newTicket()" title="Nuevo ticket (F3)">
+    ＋ <span class="kbd-hint">F3</span>
+  </button>
+
+</div>
+
+
+<!-- CONTENIDO PRINCIPAL -->
 <div class="pos-container">
 
   <!-- PRODUCTOS -->
   <div class="products-panel">
 
-    <div class="search">
+    <div class="search-bar">
       <input
         #searchInput
         type="text"
@@ -12,7 +75,11 @@
         (input)="filterProducts()"
         (keydown.enter)="addFirstProduct()"
       />
+      <button class="btn-add-product" (click)="openAddProductModal()" title="Agregar nuevo producto">
+        ＋ Nuevo
+      </button>
     </div>
+
     <div *ngIf="isMobile && !searchTerm" class="search-hint">
       Busca un producto o escanea un código
     </div>
@@ -23,48 +90,36 @@
         class="product-row"
         *ngFor="let product of filteredProducts"
         (click)="addProduct(product)"
-        >
+      >
 
         <span class="product-name">
-
-        {{product.name}}
-
-        <span class="product-code">
-        ({{product.code}})
+          {{product.name}}
+          <span class="product-code">({{product.code}})</span>
         </span>
 
-        </span>
+        <span class="product-stock">Stock: {{product.stock}}</span>
 
-        <span class="product-stock">
+        <span class="product-price">${{product.price}}</span>
 
-        Stock: {{product.stock}}
-
-        </span>
-
-        <span class="product-price">
-
-        ${{product.price}}
-
-        </span>
+        <button
+          class="btn-edit-product"
+          (click)="openEditProductModal($event, product)"
+          title="Editar producto"
+        >✎</button>
 
       </div>
 
-</div>
+    </div>
 
   </div>
 
 
-
-  <!-- TICKET -->
+  <!-- TICKET ACTIVO -->
   <div class="ticket-panel">
 
     <div class="ticket-header">
-
-    <h3>Ticket</h3>
-
-    <button class="expand" (click)="openTicketModal()">⛶
-    </button>
-
+      <h3>{{tickets[activeTicketIndex].name}}</h3>
+      <button class="expand" (click)="openTicketModal()">⛶</button>
     </div>
 
     <div class="ticket-items">
@@ -74,55 +129,36 @@
         *ngFor="let item of ticket; let i = index"
         (click)="selectTicketItem(i)"
         [class.selected]="selectedTicketIndex === i"
-        >
-
-        <span>
-        {{item.name}} x{{item.qty}}
-        </span>
-
-        <span>
-        ${{item.qty * item.price}}
-        </span>
-
-        <button
-        class="remove"
-        (click)="removeItem(i); $event.stopPropagation()"
-        >
-        ✕
-        </button>
-
+      >
+        <span>{{item.name}} x{{item.qty}}</span>
+        <span>${{item.qty * item.price}}</span>
+        <button class="remove" (click)="removeItem(i); $event.stopPropagation()">✕</button>
       </div>
 
     </div>
 
-
     <div class="total-section">
-
       <div class="total-title">Subtotal</div>
-        <div>${{getSubtotal()}}</div>
-
-        <div *ngIf="discountApplied > 0" class="discount-line">
+      <div>${{getSubtotal()}}</div>
+      <div *ngIf="discountApplied > 0" class="discount-line">
         Descuento -${{discountApplied}}
-        </div>
-
-        <div class="total-title">Total</div>
+      </div>
+      <div class="total-title">Total</div>
       <div class="total">${{getTotal()}}</div>
-
     </div>
-
 
     <div class="payments">
 
       <button class="pay green" (click)="openPaymentModal()">
-      Cobrar
+        Cobrar <kbd>F12</kbd>
       </button>
 
       <button class="pay purple" (click)="openDiscountModal()">
-      Descuento
+        Descuento
       </button>
 
       <button class="pay blue" (click)="clearTicket()">
-      Limpiar
+        Limpiar
       </button>
 
     </div>
@@ -131,176 +167,128 @@
 
 </div>
 
+
+<!-- MODAL GRANEL -->
 <div class="modal-backdrop" *ngIf="weightModal">
-
-<div class="modal">
-
-<h3>{{selectedProduct?.name}}</h3>
-
-<p>Precio: ${{selectedProduct?.price}} / kg</p>
-
-
-<label>Kilos</label>
-
-<input
-type="number"
-step="0.001"
-[(ngModel)]="kilos"
-(input)="updateFromKilos()"
->
-
-
-<label>Monto ($)</label>
-
-<input
-type="number"
-step="0.01"
-[(ngModel)]="amount"
-(input)="updateFromAmount()"
-(keydown.enter)="confirmWeight()"
->
-
-
-<button (click)="confirmWeight()">
-
-Agregar al Ticket
-
-</button>
-
+  <div class="modal">
+    <h3>{{selectedProduct?.name}}</h3>
+    <p>Precio: ${{selectedProduct?.price}} / kg</p>
+    <label>Kilos</label>
+    <input type="number" step="0.001" [(ngModel)]="kilos" (input)="updateFromKilos()">
+    <label>Monto ($)</label>
+    <input type="number" step="0.01" [(ngModel)]="amount" (input)="updateFromAmount()" (keydown.enter)="confirmWeight()">
+    <button (click)="confirmWeight()">Agregar al Ticket</button>
+  </div>
+  <button class="cancel" (click)="closeWeightModal()">Cancelar</button>
 </div>
-<button class="cancel" (click)="closeWeightModal()">
-Cancelar
-</button>
-</div>
+
 
 <!-- MODAL COBRAR -->
-
 <div class="modal-backdrop" *ngIf="paymentModal">
-
-<div class="modal">
-
-<h3>Cobrar</h3>
-
-<p>Total a cobrar</p>
-
-<h2>${{getTotal()}}</h2>
-
-
-<label>Método de pago</label>
-
-<select [(ngModel)]="paymentMethod">
-
-<option value="efectivo">Efectivo</option>
-<option value="tarjeta">Tarjeta</option>
-<option value="transferencia">Transferencia</option>
-<option value="dividido">Pago dividido</option>
-
-</select>
-
-
-<!-- PAGO DIVIDIDO -->
-
-<div *ngIf="paymentMethod==='dividido'">
-
-<label>Monto 1</label>
-
-<input type="number" [(ngModel)]="splitAmount1">
-
-<select [(ngModel)]="splitMethod1">
-<option value="efectivo">Efectivo</option>
-<option value="tarjeta">Tarjeta</option>
-<option value="transferencia">Transferencia</option>
-</select>
-
-
-<label>Monto 2</label>
-
-<input type="number" [(ngModel)]="splitAmount2">
-
-<select [(ngModel)]="splitMethod2">
-<option value="efectivo">Efectivo</option>
-<option value="tarjeta">Tarjeta</option>
-<option value="transferencia">Transferencia</option>
-</select>
-
+  <div class="modal">
+    <h3>Cobrar</h3>
+    <p>Total a cobrar</p>
+    <h2>${{getTotal()}}</h2>
+    <label>Método de pago</label>
+    <select [(ngModel)]="paymentMethod">
+      <option value="efectivo">Efectivo</option>
+      <option value="tarjeta">Tarjeta</option>
+      <option value="transferencia">Transferencia</option>
+      <option value="dividido">Pago dividido</option>
+    </select>
+    <div *ngIf="paymentMethod==='dividido'">
+      <label>Monto 1</label>
+      <input type="number" [(ngModel)]="splitAmount1">
+      <select [(ngModel)]="splitMethod1">
+        <option value="efectivo">Efectivo</option>
+        <option value="tarjeta">Tarjeta</option>
+        <option value="transferencia">Transferencia</option>
+      </select>
+      <label>Monto 2</label>
+      <input type="number" [(ngModel)]="splitAmount2">
+      <select [(ngModel)]="splitMethod2">
+        <option value="efectivo">Efectivo</option>
+        <option value="tarjeta">Tarjeta</option>
+        <option value="transferencia">Transferencia</option>
+      </select>
+    </div>
+    <button (click)="confirmPayment()">Confirmar pago <kbd>F2</kbd></button>
+    <button class="cancel" (click)="paymentModal=false">Cancelar</button>
+  </div>
 </div>
 
-
-<button (click)="confirmPayment()">Confirmar pago</button>
-
-<button class="cancel" (click)="paymentModal=false">
-
-Cancelar
-
-</button>
-
-</div>
-
-</div>
 
 <!-- MODAL DESCUENTO -->
-
 <div class="modal-backdrop" *ngIf="discountModal">
-
-<div class="modal">
-
-<h3>Aplicar descuento</h3>
-
-<label>% Descuento</label>
-
-<input type="number" [(ngModel)]="discountPercent">
-
-<label>Monto descuento</label>
-
-<input type="number" [(ngModel)]="discountAmount">
-
-<button (click)="applyDiscount()">
-Aplicar
-</button>
-
-<button class="cancel" (click)="discountModal=false">
-Cancelar
-</button>
-
-</div>
-
-</div>
-
-<!-- MODAL TICKET -->
-
-<div class="modal-backdrop" *ngIf="ticketModal">
-
-<div class="modal ticket-modal">
-
-<h2>Ticket completo</h2>
-
-  <div class="ticket-full-list">
-
-    <div 
-    *ngFor="let item of ticket"
-    class="ticket-full-row"
-    >
-
-    <span>{{item.name}} x{{item.qty}}</span>
-
-    <span>${{item.price * item.qty}}</span>
-
-    </div>
-
+  <div class="modal">
+    <h3>Aplicar descuento</h3>
+    <label>% Descuento</label>
+    <input type="number" [(ngModel)]="discountPercent">
+    <label>Monto descuento</label>
+    <input type="number" [(ngModel)]="discountAmount">
+    <button (click)="applyDiscount()">Aplicar</button>
+    <button class="cancel" (click)="discountModal=false">Cancelar</button>
   </div>
-
-<div class="ticket-total-modal">
-
-Total ${{getTotal()}}
-
 </div>
 
-<button (click)="ticketModal=false">
 
-Cerrar
-
-</button>
-
+<!-- MODAL TICKET COMPLETO -->
+<div class="modal-backdrop" *ngIf="ticketModal">
+  <div class="modal ticket-modal">
+    <h2>{{tickets[activeTicketIndex].name}}</h2>
+    <div class="ticket-full-list">
+      <div *ngFor="let item of ticket" class="ticket-full-row">
+        <span>{{item.name}} x{{item.qty}}</span>
+        <span>${{item.price * item.qty}}</span>
+      </div>
+    </div>
+    <div class="ticket-total-modal">Total ${{getTotal()}}</div>
+    <button (click)="ticketModal=false">Cerrar</button>
+  </div>
 </div>
 
+
+<!-- MODAL NUEVO PRODUCTO -->
+<div class="modal-backdrop" *ngIf="addProductModal">
+  <div class="modal">
+    <h3>Agregar nuevo producto</h3>
+    <label>Código</label>
+    <input type="text" [(ngModel)]="newProduct.code" placeholder="Ej: 1031">
+    <label>Nombre</label>
+    <input type="text" [(ngModel)]="newProduct.name" placeholder="Nombre del producto">
+    <label>Precio ($)</label>
+    <input type="number" [(ngModel)]="newProduct.price" placeholder="0.00">
+    <label>Tipo</label>
+    <select [(ngModel)]="newProduct.type">
+      <option value="unit">Por unidad</option>
+      <option value="weight">Por peso (kg)</option>
+    </select>
+    <label>Stock inicial</label>
+    <input type="number" [(ngModel)]="newProduct.stock" placeholder="0">
+    <button (click)="saveNewProduct()">Guardar producto</button>
+    <button class="cancel" (click)="addProductModal=false">Cancelar</button>
+  </div>
+</div>
+
+
+<!-- MODAL EDITAR PRODUCTO -->
+<div class="modal-backdrop" *ngIf="editProductModal">
+  <div class="modal">
+    <h3>Editar producto</h3>
+    <label>Código</label>
+    <input type="text" [(ngModel)]="editingProduct.code">
+    <label>Nombre</label>
+    <input type="text" [(ngModel)]="editingProduct.name">
+    <label>Precio ($)</label>
+    <input type="number" [(ngModel)]="editingProduct.price">
+    <label>Tipo</label>
+    <select [(ngModel)]="editingProduct.type">
+      <option value="unit">Por unidad</option>
+      <option value="weight">Por peso (kg)</option>
+    </select>
+    <label>Stock</label>
+    <input type="number" [(ngModel)]="editingProduct.stock">
+    <button (click)="saveEditProduct()">Guardar cambios</button>
+    <button class="cancel" (click)="editProductModal=false">Cancelar</button>
+  </div>
 </div>

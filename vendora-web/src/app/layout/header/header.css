@@ -1,60 +1,46 @@
 .topbar{
-
   height:60px;
-
   display:flex;
-
   justify-content:space-between;
-
   align-items:center;
-
   padding:0 20px;
-
   background:white;
-
   border-bottom:1px solid #e5e7eb;
-
   box-shadow:0 3px 10px rgba(0,0,0,0.05);
 }
 
 .logo{
-
   display:flex;
-
   align-items:center;
-
   gap:10px;
-
   font-weight:700;
-
   font-size:16px;
-
   color:#1f2937;
+  cursor:pointer;
+}
+
+.logo-img{
+  height:32px;
+}
+
+.logo-text{
+  font-weight:600;
+  font-size:16px;
 }
 
 .logo-v{
-
   background:linear-gradient(135deg,#3b82f6,#22c55e);
-
   color:white;
-
   padding:6px 10px;
-
   border-radius:8px;
-
   font-weight:800;
 }
 
 .right{
-
   display:flex;
-
   align-items:center;
-
   gap:8px;
-
   font-size:14px;
-
   color:#374151;
 }
 
@@ -66,26 +52,36 @@
   font-size:12px;
 }
 
-.logo{
+/* ── Botón Corte del día ── */
 
+.btn-corte{
   display:flex;
-
   align-items:center;
-
-  gap:10px;
-
+  gap:7px;
+  margin-left:10px;
+  padding:8px 16px;
+  border:none;
+  border-radius:8px;
+  background:#1e293b;
+  color:white;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:background 0.15s, transform 0.1s;
+  white-space:nowrap;
 }
 
-.logo-img{
-
-  height:32px;
-
+.btn-corte:hover{
+  background:#0f172a;
+  transform:translateY(-1px);
 }
 
-.logo-text{
+.btn-corte:active{
+  transform:translateY(0);
+}
 
-  font-weight:600;
-
-  font-size:16px;
-
+/* Ocultar texto en móvil muy pequeño, dejar solo el icono */
+@media (max-width: 480px){
+  .btn-corte span{ display:none; }
+  .btn-corte{ padding:8px 10px; }
 }
